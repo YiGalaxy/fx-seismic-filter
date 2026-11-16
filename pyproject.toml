@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fx-seismic-filter"
+version = "0.1.0"
+description = "F-X domain prediction filtering for seismic sections"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10",
+]
+
+[project.optional-dependencies]
+segy = ["segyio>=1.9"]
+obspy = ["obspy>=1.4"]
+formats = ["segyio>=1.9", "obspy>=1.4"]
+dev = ["pytest>=8", "build>=1"]
+
+[project.scripts]
+fx-seismic-filter = "fxseisfilter.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
