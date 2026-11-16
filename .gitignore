@@ -15,5 +15,5 @@ ENV/
 .env
 .idea/
 .vscode/
-*.npz
+example_result.npz
 *_fx_result.*
