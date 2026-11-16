@@ -1,7 +1,11 @@
 import numpy as np
 import pytest
+from pathlib import Path
 
-from fxseisfilter import FXConfig, fx_filter, process, process_file, read_seismic
+from fxseisfilter import FXConfig, fx_filter, metrics, process, process_file, read_seismic
+
+
+FIXTURE_DIR = Path(__file__).resolve().parent / "data"
 
 
 def test_identity_reconstruction():
@@ -63,3 +67,19 @@ def test_file_api_refuses_to_overwrite_input(tmp_path):
     np.savez_compressed(path, data=data, dt=.002)
     with pytest.raises(ValueError, match="must not overwrite"):
         process_file(path, path, key="data")
+
+
+def test_checked_in_synthetic_fixture_complete_workflow(tmp_path):
+    source = FIXTURE_DIR / "synthetic_noisy.csv"
+    clean, dt, _ = read_seismic(FIXTURE_DIR / "synthetic_clean.csv", dt=.002)
+    result = process_file(
+        source, tmp_path / "synthetic_result.npz", dt=dt,
+        lw=64, lx=24, lop=4,
+    )
+
+    assert result["raw"].shape == clean.shape == (128, 32)
+    assert result["dt"] == dt
+    assert np.isfinite(result["fx"]).all()
+    scores = metrics(clean, result["fx"])
+    assert set(scores) == {"snr_db", "rmse", "relative_error", "correlation"}
+    assert all(np.isfinite(value) for value in scores.values())
